@@ -1,40 +1,87 @@
+import 'package:atividade3/CalcScreen.dart';
+import 'package:atividade3/Destiny.dart';
 import 'package:atividade3/ListCars.dart';
 import 'package:atividade3/ListDestiny.dart';
 import 'package:flutter/material.dart';
+import 'Car.dart';
 
-class homeScreen extends StatefulWidget {
-  const homeScreen({super.key});
+class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
 
   @override
-  State<homeScreen> createState() => _homeScreenState();
+  State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _homeScreenState extends State<homeScreen> {
-  int _IndexSelecionado = 0;
+class _HomeScreenState extends State<HomeScreen> {
+  int _indexSelecionado = 0;
 
-  final List<Widget> _widgetOptions = <Widget>[
-    Text('Tela 1'),
-    listCars(),
-    listDestiny(),
+  final List<Car> _carros = [
+    Car(nome: "BMW", KM_perL: 25.0),
+    Car(nome: "Gol", KM_perL: 25.0),
   ];
 
-  void _ItemSelecionado(int index) {
+  final List<Destiny> _destinos = [
+    Destiny(nomeCidade: "Florianopolis", KM: 1000),
+    Destiny(nomeCidade: "Rosário do Sul", KM: 35)
+  ];
+
+  void _itemSelecionado(int index) {
     setState(() {
-      _IndexSelecionado = index;
+      _indexSelecionado = index;
+    });
+  }
+
+  // REMOVER CARRO
+  void _removerCarro(int index) {
+    setState(() {
+      _carros.removeAt(index);
+    });
+  }
+
+  // INSERIR CARRO
+  void _inserirCarro(Car novoCarro) {
+    setState(() {
+      _carros.add(novoCarro);
+    });
+  }
+
+  // INSERIR DESTINO
+  void _inserirDestino(Destiny novoDestino) {
+    setState(() {
+      _destinos.add(novoDestino);
+    });
+  }
+
+  // REMOVER DESTINO
+  void _removerDestino(int index) {
+    setState(() {
+      _destinos.removeAt(index);
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    final List<Widget> widgetOptions = <Widget>[
+      CalcScreen(
+        carros: _carros,
+        destinos: _destinos,
+    
+      ),
+      listCars(
+        carros: _carros,
+        onRemove: _removerCarro,
+        onInsert: _inserirCarro,
+      ),
+      listDestiny(
+        destinos: _destinos,
+        onInsert: _inserirDestino,
+        onRemove: _removerDestino,
+      ),
+    ];
+
     return Scaffold(
-      appBar: AppBar(
-          leading: IconButton(
-              onPressed: () {
-              
-              },
-              icon: Icon(Icons.add))),
       body: Center(
-        child: _widgetOptions[_IndexSelecionado],
+        child: widgetOptions[_indexSelecionado],
       ),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
@@ -51,9 +98,9 @@ class _homeScreenState extends State<homeScreen> {
             label: 'Destinos',
           ),
         ],
-        currentIndex: _IndexSelecionado,
+        currentIndex: _indexSelecionado,
         selectedItemColor: Colors.orange,
-        onTap: _ItemSelecionado,
+        onTap: _itemSelecionado,
       ),
     );
   }
