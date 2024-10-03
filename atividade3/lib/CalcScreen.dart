@@ -19,6 +19,8 @@ class CalcScreen extends StatefulWidget {
 class _CalcScreenState extends State<CalcScreen> {
   String? _carroSelecionado;
   String? _destinoSelecionado;
+  double _custoComum = 0;
+  double _custoDiesel = 0;
 
   // Variaveis da gasolina
   double precoGasolinaComum = 5.50;
@@ -37,7 +39,7 @@ class _CalcScreenState extends State<CalcScreen> {
   }
 
   // Método para exibir modal (alterar preço gasolina)
-  void openModal() {
+  void openModal(BuildContext scaffoldContext) {
     showModalBottomSheet(
         context: context,
         isScrollControlled: true,
@@ -134,9 +136,27 @@ class _CalcScreenState extends State<CalcScreen> {
         });
   }
 
+//METODO PARA CALCULAR CUSTOS DA VIAGEM
+  void calcularCusto(){
+    if(_carroSelecionado !=null && _destinoSelecionado != null){
+      Car carro = widget.carros.firstWhere((car) => car.nome == _carroSelecionado);
+      Destiny destino = widget.destinos.firstWhere((dest) => dest.nomeCidade == _destinoSelecionado);
+
+      //Calcular quantidade de Litros necessarios
+      double litrosNecessarios = destino.KM / carro.KM_perL;
+
+      //Calcula o custo para os combustiveis
+      setState(() {
+        _custoComum = litrosNecessarios * precoGasolinaComum;
+        _custoDiesel = litrosNecessarios * precoDiesel;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return Scaffold(
+    body: Column(
       children: [
         // Botão de alterar preço
         Container(
@@ -149,7 +169,9 @@ class _CalcScreenState extends State<CalcScreen> {
               side: const BorderSide(color: Colors.orange, width: 1.0),
               backgroundColor: const Color.fromARGB(255, 255, 255, 255),
             ),
-            onPressed: openModal,
+            onPressed: (){
+              openModal(context);
+            },
             child: const Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -226,7 +248,7 @@ class _CalcScreenState extends State<CalcScreen> {
               width: 300,
               child: DropdownButton<String>(
                 isExpanded: true,
-                hint: const Text("Selecione um carro"),
+                hint: Text("Selecione um carro"),
                 value: _carroSelecionado,
                 items: widget.carros.map((Car carro) {
                   return DropdownMenuItem<String>(
@@ -245,7 +267,7 @@ class _CalcScreenState extends State<CalcScreen> {
               width: 300,
               child: DropdownButton<String>(
                 isExpanded: true,
-                hint: const Text("Selecione um destino"),
+                hint: Text("Selecione um destino"),
                 value: _destinoSelecionado,
                 items: widget.destinos.map((Destiny destino) {
                   return DropdownMenuItem<String>(
@@ -262,9 +284,9 @@ class _CalcScreenState extends State<CalcScreen> {
             ),
           ],
         ),
-        const SizedBox(height: 20),
+        SizedBox(height: 20),
         // Exibir o custo total
-        const Padding(
+        Padding(
           padding: EdgeInsets.only(right: 35, top: 20),
           child: Column(
             children: [
@@ -290,7 +312,7 @@ class _CalcScreenState extends State<CalcScreen> {
                   ),
                   SizedBox(width: 5),
                   Text(
-                    "BRL250",
+                    "BRL${_custoComum.toStringAsFixed(2)}",
                     style: TextStyle(
                       color: Colors.black,
                       fontWeight: FontWeight.bold,
@@ -308,7 +330,7 @@ class _CalcScreenState extends State<CalcScreen> {
                   ),
                   SizedBox(width: 5),
                   Text(
-                    "BRL365",
+                    "BRL${_custoDiesel.toStringAsFixed(2)}",
                     style: TextStyle(
                       color: Colors.black,
                       fontWeight: FontWeight.bold,
@@ -320,8 +342,26 @@ class _CalcScreenState extends State<CalcScreen> {
             ],
           ),
         ),
-        const SizedBox(height: 50),
+        SizedBox(height: 50),
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            minimumSize: Size(300, 60),
+            backgroundColor: Colors.orange,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(0),
+            ),
+          ),
+          onPressed: (){
+            calcularCusto();
+          },
+          child: Text(
+            "Calcular",
+            style: TextStyle(
+              color: Colors.white,
+            ),
+            )
+          )
       ],
+    )
     );
   }
 }
