@@ -1,23 +1,53 @@
 import 'package:atividade3/ListCardWidget.dart';
 import 'package:flutter/material.dart';
 import 'Car.dart';
+import 'package:atividade3/DatabaseHelper.dart';
 
 class listCars extends StatefulWidget {
-  final List<Car> carros;
-  final Function(int) onRemove;
-  final Function(Car) onInsert;
 
-  const listCars(
-      {required this.carros,
-      required this.onRemove,
-      required this.onInsert,
-      super.key});
+  const listCars({super.key});
 
   @override
   State<listCars> createState() => _listCarsState();
 }
 
 class _listCarsState extends State<listCars> {
+  List<Car> carros = [];
+
+//INICIALIZADOR
+  @override
+ void initState(){
+  super.initState();
+  _loadCars();
+ }
+
+//METODO PARA CARREGAR CARROS DO BANCO
+ Future<void> _loadCars() async {
+    final db = DatabaseHelper.instance;
+    final loadedCars = await db.getCars();
+    setState(() {
+      carros = loadedCars;
+    });
+  }
+
+  //METODO PARA REMOVER CARRO
+  Future<void> _removeCar(int index) async {
+  final db = DatabaseHelper.instance;
+  await db.deleteCar(carros[index].id!);
+  setState(() {
+    carros.removeAt(index);
+  });
+}
+
+//METODO PARA INSERIR CARRO
+Future<void> _insertCar(Car car) async {
+  final db = DatabaseHelper.instance;
+  final id = await db.insertCar(car);
+  setState(() {
+    carros.add(Car(id: id, nome: car.nome, KM_perL: car.KM_perL));
+  });
+}
+
 //CONTROLADORES NOME E KM
   final TextEditingController _nomeController = TextEditingController();
   final TextEditingController _kmController = TextEditingController();
@@ -55,7 +85,7 @@ class _listCarsState extends State<listCars> {
 
                     if (nome.isNotEmpty && km != null) {
                       //Inserir carro com os valores recebidos
-                      widget.onInsert(Car(nome: nome, KM_perL: km));
+                      _insertCar(Car(nome: nome, KM_perL: km));
 
                       //Limpar formulario
                       _nomeController.clear();
@@ -98,12 +128,12 @@ class _listCarsState extends State<listCars> {
           ),
           centerTitle: true),
       body: ListView.builder(
-        itemCount: widget.carros.length,
+        itemCount: carros.length,
         itemBuilder: (context, index) {
           return listCard(
-            nome: widget.carros[index].nome,
-            km: widget.carros[index].KM_perL,
-            onRemoved: () => widget.onRemove(index),
+            nome: carros[index].nome,
+            km: carros[index].KM_perL,
+            onRemoved: () => _removeCar(index),
           );
         },
       ),

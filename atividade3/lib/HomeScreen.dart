@@ -31,52 +31,13 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  // REMOVER CARRO
-  void _removerCarro(int index) {
-    setState(() {
-      _carros.removeAt(index);
-    });
-  }
-
-  // INSERIR CARRO
-  void _inserirCarro(Car novoCarro) {
-    setState(() {
-      _carros.add(novoCarro);
-    });
-  }
-
-  // INSERIR DESTINO
-  void _inserirDestino(Destiny novoDestino) {
-    setState(() {
-      _destinos.add(novoDestino);
-    });
-  }
-
-  // REMOVER DESTINO
-  void _removerDestino(int index) {
-    setState(() {
-      _destinos.removeAt(index);
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
     final List<Widget> widgetOptions = <Widget>[
-      CalcScreen(
-        carros: _carros,
-        destinos: _destinos,
-    
-      ),
-      listCars(
-        carros: _carros,
-        onRemove: _removerCarro,
-        onInsert: _inserirCarro,
-      ),
-      listDestiny(
-        destinos: _destinos,
-        onInsert: _inserirDestino,
-        onRemove: _removerDestino,
-      ),
+      const CalcScreen(),
+      const listCars(),
+      const listDestiny(),
     ];
 
     return Scaffold(

@@ -1,23 +1,47 @@
 import 'package:atividade3/Destiny.dart';
 import 'package:atividade3/ListCardDestiny.dart';
 import 'package:flutter/material.dart';
+import 'package:atividade3/DatabaseHelper.dart';
 
 class listDestiny extends StatefulWidget {
-  final List<Destiny> destinos;
-  final Function(Destiny) onInsert;
-  final Function(int) onRemove;
-
-  const listDestiny(
-      {required this.destinos,
-      required this.onInsert,
-      required this.onRemove,
-      super.key});
+  const listDestiny({super.key});
 
   @override
   State<listDestiny> createState() => _listDestinyState();
 }
 
 class _listDestinyState extends State<listDestiny> {
+  List<Destiny> destinos = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadDestinies();
+  }
+
+  Future<void> _loadDestinies() async {
+    final db = DatabaseHelper.instance;
+    final loadedDestinies = await db.getDestinies();
+    setState(() {
+      destinos = loadedDestinies;
+    });
+  }
+
+  Future<void> _removeDestiny(int index) async {
+    final db = DatabaseHelper.instance;
+    await db.deleteDestiny(destinos[index].id!);
+    setState(() {
+      destinos.removeAt(index);
+    });
+  }
+
+  Future<void> _insertDestiny(Destiny destiny) async {
+  final db = DatabaseHelper.instance;
+  final id = await db.insertDestiny(destiny);
+  setState(() {
+    destinos.add(Destiny(id: id, nomeCidade: destiny.nomeCidade, KM: destiny.KM));
+  });
+}
 
   final TextEditingController _nomeCidadeControl = TextEditingController();
   final TextEditingController _KmCidadeControl = TextEditingController();
@@ -36,11 +60,13 @@ class _listDestinyState extends State<listDestiny> {
             child: Column(
               children: [
                 TextField(
-                  decoration: const InputDecoration(label: Text("Nome da cidade")),
+                  decoration:
+                      const InputDecoration(label: Text("Nome da cidade")),
                   controller: _nomeCidadeControl,
                 ),
                 TextField(
-                  decoration: const InputDecoration(label: Text("Distância (KM)")),
+                  decoration:
+                      const InputDecoration(label: Text("Distância (KM)")),
                   controller: _KmCidadeControl,
                 ),
                 ElevatedButton(
@@ -50,8 +76,7 @@ class _listDestinyState extends State<listDestiny> {
                       final double? km = double.tryParse(_KmCidadeControl.text);
 
                       if (nomeCidade.isNotEmpty && km != null) {
-                        widget
-                            .onInsert(Destiny(nomeCidade: nomeCidade, KM: km));
+                        _insertDestiny(Destiny(nomeCidade: nomeCidade, KM: km));
 
                         _KmCidadeControl.clear();
                         _nomeCidadeControl.clear();
@@ -87,12 +112,12 @@ class _listDestinyState extends State<listDestiny> {
         ),
       ),
       body: ListView.builder(
-          itemCount: widget.destinos.length,
+          itemCount: destinos.length,
           itemBuilder: (context, index) {
             return listCardDestiny(
-              nome: widget.destinos[index].nomeCidade,
-              km: widget.destinos[index].KM,
-              onRemoved: ()=> widget.onRemove(index),
+              nome: destinos[index].nomeCidade,
+              km: destinos[index].KM,
+              onRemoved: () => _removeDestiny(index),
             );
           }),
       floatingActionButton: FloatingActionButton(
